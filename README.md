@@ -1,9 +1,18 @@
-# 🧲 BTorrent - A BitTorrent Client Built From Scratch in C
+<div style="display: flex; align-items: center; gap: 20px;">
 
-> A fully documented, educational BitTorrent client designed to teach you how
-> peer-to-peer file sharing works at the lowest level.
+  <img src="./assets/images/BT.png" alt="BTorrent Logo" width="100"/>
 
----
+  <div>
+    <h1>BTorrent - A BitTorrent Client Built From Scratch in C</h1>
+    <p>
+      A fully documented, educational BitTorrent client designed to teach you how
+      peer-to-peer file sharing works at the lowest level.
+    </p>
+  </div>
+
+</div>
+
+<hr/>
 
 ## 🎯 What You'll Learn
 
