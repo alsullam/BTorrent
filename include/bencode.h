@@ -19,7 +19,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* ── Node types ──────────────────────────────────────────────────────────── */
+/* Node types */
 
 typedef enum {
     BENCODE_INT,    /* i42e  → integer */
@@ -28,7 +28,7 @@ typedef enum {
     BENCODE_DICT    /* d...e  → dictionary (sorted string keys) */
 } BencodeType;
 
-/* ── The node struct ─────────────────────────────────────────────────────── */
+/* The node struct */
 
 typedef struct BencodeNode BencodeNode;
 
@@ -60,7 +60,7 @@ struct BencodeNode {
     };
 };
 
-/* ── Parse / free ────────────────────────────────────────────────────────── */
+/* Parse / free */
 
 /**
  * bencode_parse - parse a bencoded buffer.
@@ -81,7 +81,7 @@ BencodeNode *bencode_parse(const uint8_t *data, size_t len);
  */
 void bencode_free(BencodeNode *node);
 
-/* ── Dictionary lookup ───────────────────────────────────────────────────── */
+/* Dictionary lookup */
 
 /**
  * bencode_dict_get - look up a key in a BENCODE_DICT node.
@@ -95,7 +95,7 @@ void bencode_free(BencodeNode *node);
  */
 BencodeNode *bencode_dict_get(const BencodeNode *node, const char *key);
 
-/* ── Debug helpers ───────────────────────────────────────────────────────── */
+/* Debug helpers */
 
 /**
  * bencode_print - pretty-print a BencodeNode tree to stdout.
@@ -106,7 +106,7 @@ BencodeNode *bencode_dict_get(const BencodeNode *node, const char *key);
  */
 void bencode_print(const BencodeNode *node, int indent);
 
-/* ── Internal: parser state ──────────────────────────────────────────────── */
+/* Internal: parser state */
 
 /**
  * BencodeParser holds the cursor position while parsing.

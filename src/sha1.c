@@ -10,7 +10,7 @@
 #include "sha1.h"
 #include <string.h>
 
-/* ── Left rotate macro ───────────────────────────────────────────────────── */
+/* Left rotate macro */
 
 /*
  * Left rotation of a 32-bit value by n bits.
@@ -22,7 +22,7 @@
  */
 #define ROTL(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
 
-/* ── SHA-1 round constants ───────────────────────────────────────────────── */
+/* SHA-1 round constants */
 
 /*
  * These constants are defined in RFC 3174.
@@ -41,7 +41,7 @@ static const uint32_t K[4] = {
     0xCA62C1D6,  /* rounds 60-79 */
 };
 
-/* ── Round functions ─────────────────────────────────────────────────────── */
+/* Round functions */
 
 /*
  * SHA-1 uses 4 different boolean functions across 80 rounds.
@@ -56,7 +56,7 @@ static const uint32_t K[4] = {
 #define Par(b,c,d) ((b) ^ (c) ^ (d))
 #define Maj(b,c,d) (((b) & (c)) | ((b) & (d)) | ((c) & (d)))
 
-/* ── sha1_init ───────────────────────────────────────────────────────────── */
+/* sha1_init */
 
 void sha1_init(SHA1_CTX *ctx) {
     /*
@@ -77,7 +77,7 @@ void sha1_init(SHA1_CTX *ctx) {
     memset(ctx->buffer, 0, sizeof(ctx->buffer));
 }
 
-/* ── sha1_process_block — the core compression function ─────────────────── */
+/* sha1_process_block — the core compression function */
 
 void sha1_process_block(SHA1_CTX *ctx, const uint8_t *block) {
     /*
@@ -162,7 +162,7 @@ void sha1_process_block(SHA1_CTX *ctx, const uint8_t *block) {
     ctx->h[4] += e;
 }
 
-/* ── sha1_update ─────────────────────────────────────────────────────────── */
+/* sha1_update */
 
 void sha1_update(SHA1_CTX *ctx, const uint8_t *data, size_t len) {
     /*
@@ -206,7 +206,7 @@ void sha1_update(SHA1_CTX *ctx, const uint8_t *data, size_t len) {
     }
 }
 
-/* ── sha1_final ──────────────────────────────────────────────────────────── */
+/* sha1_final */
 
 void sha1_final(SHA1_CTX *ctx, uint8_t *digest) {
     /*
@@ -259,7 +259,7 @@ void sha1_final(SHA1_CTX *ctx, uint8_t *digest) {
     }
 }
 
-/* ── sha1 — convenience one-shot function ────────────────────────────────── */
+/* sha1 — convenience one-shot function */
 
 void sha1(const uint8_t *data, size_t len, uint8_t *digest) {
     SHA1_CTX ctx;

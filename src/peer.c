@@ -23,13 +23,13 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-/* ── Constants ───────────────────────────────────────────────────────────── */
+/* Constants */
 
 #define HANDSHAKE_SIZE    68   /* 1 + 19 + 8 + 20 + 20 */
 #define PSTR              "BitTorrent protocol"
 #define PSTRLEN           19
 
-/* ── Internal: reliable send ─────────────────────────────────────────────── */
+/* Internal: reliable send */
 
 /*
  * send_all - keep sending until all bytes are written.
@@ -50,7 +50,7 @@ static int send_all(int sock, const uint8_t *buf, size_t len) {
     return 0;
 }
 
-/* ── Internal: reliable receive ──────────────────────────────────────────── */
+/* Internal: reliable receive */
 
 /*
  * recv_all - keep receiving until exactly `len` bytes are read.
@@ -71,7 +71,7 @@ static int recv_all(int sock, uint8_t *buf, size_t len) {
     return 0;
 }
 
-/* ── peer_connect ────────────────────────────────────────────────────────── */
+/* peer_connect */
 
 PeerConn *peer_connect(const char    *ip,
                        uint16_t       port,
@@ -137,7 +137,7 @@ PeerConn *peer_connect(const char    *ip,
     return conn;
 }
 
-/* ── peer_close ──────────────────────────────────────────────────────────── */
+/* peer_close */
 
 void peer_close(PeerConn *conn) {
     if (!conn) return;
@@ -145,7 +145,7 @@ void peer_close(PeerConn *conn) {
     free(conn);
 }
 
-/* ── peer_handshake ──────────────────────────────────────────────────────── */
+/* peer_handshake */
 
 int peer_handshake(PeerConn *conn, const uint8_t *info_hash,
                    const uint8_t *our_peer_id) {
@@ -214,7 +214,7 @@ int peer_handshake(PeerConn *conn, const uint8_t *info_hash,
     return 0;
 }
 
-/* ── Internal: send a simple no-payload message ──────────────────────────── */
+/* Internal: send a simple no-payload message */
 
 static int send_simple_msg(PeerConn *conn, uint8_t msg_id) {
     /*
@@ -229,7 +229,7 @@ static int send_simple_msg(PeerConn *conn, uint8_t msg_id) {
     return send_all(conn->sock, buf, 5);
 }
 
-/* ── peer_send_interested ────────────────────────────────────────────────── */
+/* peer_send_interested */
 
 int peer_send_interested(PeerConn *conn) {
     printf("peer %s:%d: sending interested\n", conn->ip, conn->port);
@@ -237,7 +237,7 @@ int peer_send_interested(PeerConn *conn) {
     return send_simple_msg(conn, MSG_INTERESTED);
 }
 
-/* ── peer_send_request ───────────────────────────────────────────────────── */
+/* peer_send_request */
 
 int peer_send_request(PeerConn *conn, uint32_t index,
                       uint32_t begin, uint32_t length) {
@@ -263,7 +263,7 @@ int peer_send_request(PeerConn *conn, uint32_t index,
     return send_all(conn->sock, buf, 17);
 }
 
-/* ── peer_recv_msg ───────────────────────────────────────────────────────── */
+/* peer_recv_msg */
 
 int peer_recv_msg(PeerConn *conn, PeerMsg *msg) {
     /*
@@ -412,7 +412,7 @@ int peer_recv_msg(PeerConn *conn, PeerMsg *msg) {
     return 0;
 }
 
-/* ── peer_msg_free ───────────────────────────────────────────────────────── */
+/* peer_msg_free */
 
 void peer_msg_free(PeerMsg *msg) {
     if (!msg) return;
@@ -422,7 +422,7 @@ void peer_msg_free(PeerMsg *msg) {
     msg->piece_data = NULL;
 }
 
-/* ── bitfield_has_piece ──────────────────────────────────────────────────── */
+/* bitfield_has_piece */
 
 int bitfield_has_piece(const uint8_t *bitfield, int piece_index) {
     /*

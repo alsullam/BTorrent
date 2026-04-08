@@ -24,7 +24,7 @@
 #define MAX_FILES       512
 #define MAX_PATH_LEN    1024
 
-/* ── File entry (for multi-file torrents) ────────────────────────────────── */
+/* File entry (for multi-file torrents) */
 
 typedef struct {
     char  path[MAX_PATH_LEN];  /* full relative path, e.g. "dir/file.txt" */
@@ -32,7 +32,7 @@ typedef struct {
     long  offset;               /* byte offset from start of torrent data */
 } FileEntry;
 
-/* ── Main torrent info structure ─────────────────────────────────────────── */
+/* Main torrent info structure */
 
 typedef struct {
     /* Basic metadata */
@@ -69,7 +69,7 @@ typedef struct {
 
 } TorrentInfo;
 
-/* ── Functions ───────────────────────────────────────────────────────────── */
+/* Functions */
 
 /**
  * torrent_parse - parse a .torrent file from disk.

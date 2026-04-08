@@ -35,7 +35,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-/* ── Message type IDs ────────────────────────────────────────────────────── */
+/* Message type IDs */
 
 /**
  * These are the single-byte message IDs used in the peer wire protocol.
@@ -54,7 +54,7 @@ typedef enum {
     MSG_CANCEL       =  8,  /* Cancel request [index, begin, length] */
 } MsgType;
 
-/* ── Received message ────────────────────────────────────────────────────── */
+/* Received message */
 
 /**
  * PeerMsg - a parsed incoming message from a peer.
@@ -80,7 +80,7 @@ typedef struct {
 
 } PeerMsg;
 
-/* ── Peer connection ─────────────────────────────────────────────────────── */
+/* Peer connection */
 
 /**
  * PeerConn - an active TCP connection to a peer.
@@ -94,7 +94,7 @@ typedef struct {
     int      am_interested; /* 1 = we've sent interested message */
 } PeerConn;
 
-/* ── Connection lifecycle ────────────────────────────────────────────────── */
+/* Connection lifecycle */
 
 /**
  * peer_connect - open a TCP connection to a peer.
@@ -116,7 +116,7 @@ PeerConn *peer_connect(const char    *ip,
  */
 void peer_close(PeerConn *conn);
 
-/* ── Handshake ───────────────────────────────────────────────────────────── */
+/* Handshake */
 
 /**
  * peer_handshake - send our handshake, receive and verify theirs.
@@ -133,7 +133,7 @@ void peer_close(PeerConn *conn);
 int peer_handshake(PeerConn *conn, const uint8_t *info_hash,
                    const uint8_t *our_peer_id);
 
-/* ── Sending messages ────────────────────────────────────────────────────── */
+/* Sending messages */
 
 /** peer_send_interested - send MSG_INTERESTED (4-byte length + 1-byte ID) */
 int peer_send_interested(PeerConn *conn);
@@ -149,7 +149,7 @@ int peer_send_interested(PeerConn *conn);
 int peer_send_request(PeerConn *conn, uint32_t index,
                       uint32_t begin, uint32_t length);
 
-/* ── Receiving messages ──────────────────────────────────────────────────── */
+/* Receiving messages */
 
 /**
  * peer_recv_msg - receive and parse one message from the peer.
@@ -170,7 +170,7 @@ int peer_recv_msg(PeerConn *conn, PeerMsg *msg);
  */
 void peer_msg_free(PeerMsg *msg);
 
-/* ── Bitfield helpers ────────────────────────────────────────────────────── */
+/* Bitfield helpers */
 
 /**
  * bitfield_has_piece - check if a bitfield indicates the peer has piece i.

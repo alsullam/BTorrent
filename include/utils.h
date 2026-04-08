@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-/* ── Safe memory allocation ──────────────────────────────────────────────── */
+/* Safe memory allocation */
 
 /**
  * xmalloc - malloc that exits on failure.
@@ -32,7 +32,7 @@ void *xcalloc(size_t nmemb, size_t size);
  */
 char *xstrdup(const char *s);
 
-/* ── Debug helpers ───────────────────────────────────────────────────────── */
+/* Debug helpers */
 
 /**
  * print_hex - prints `len` bytes from `data` as hex.
@@ -48,7 +48,7 @@ void print_hex(const uint8_t *data, size_t len);
  */
 void hex_to_str(const uint8_t *data, size_t len, char *out);
 
-/* ── URL encoding ────────────────────────────────────────────────────────── */
+/* URL encoding */
 
 /**
  * url_encode_bytes - percent-encodes raw bytes for use in a URL.
@@ -62,7 +62,7 @@ void hex_to_str(const uint8_t *data, size_t len, char *out);
  */
 void url_encode_bytes(const uint8_t *bytes, size_t len, char *out);
 
-/* ── Byte order helpers ──────────────────────────────────────────────────── */
+/* Byte order helpers */
 
 /**
  * read_uint32_be - reads a 32-bit big-endian integer from `buf`.

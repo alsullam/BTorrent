@@ -12,7 +12,7 @@
 #include <string.h>
 #include <ctype.h>
 
-/* ── Forward declarations (for mutual recursion) ─────────────────────────── */
+/* Forward declarations (for mutual recursion) */
 
 static BencodeNode *parse_value(BencodeParser *p);
 static BencodeNode *parse_integer(BencodeParser *p);
@@ -20,21 +20,21 @@ static BencodeNode *parse_string(BencodeParser *p);
 static BencodeNode *parse_list(BencodeParser *p);
 static BencodeNode *parse_dict(BencodeParser *p);
 
-/* ── Helper: peek at current byte without advancing ─────────────────────── */
+/* Helper: peek at current byte without advancing */
 
 static int peek(BencodeParser *p) {
     if (p->pos >= p->len) return -1;  /* EOF sentinel */
     return p->data[p->pos];
 }
 
-/* ── Helper: consume current byte and advance ────────────────────────────── */
+/* Helper: consume current byte and advance */
 
 static int consume(BencodeParser *p) {
     if (p->pos >= p->len) return -1;
     return p->data[p->pos++];
 }
 
-/* ── Helper: expect a specific byte (and consume it) ────────────────────── */
+/* Helper: expect a specific byte (and consume it) */
 
 static int expect(BencodeParser *p, char expected) {
     int c = consume(p);
@@ -46,7 +46,7 @@ static int expect(BencodeParser *p, char expected) {
     return 0;
 }
 
-/* ── Helper: allocate a new node ─────────────────────────────────────────── */
+/* Helper: allocate a new node */
 
 static BencodeNode *new_node(BencodeType type) {
     BencodeNode *n = xcalloc(1, sizeof(BencodeNode));
@@ -54,7 +54,7 @@ static BencodeNode *new_node(BencodeType type) {
     return n;
 }
 
-/* ── parse_integer ───────────────────────────────────────────────────────── */
+/* parse_integer */
 
 static BencodeNode *parse_integer(BencodeParser *p) {
     /*
@@ -99,7 +99,7 @@ static BencodeNode *parse_integer(BencodeParser *p) {
     return node;
 }
 
-/* ── parse_string ────────────────────────────────────────────────────────── */
+/* parse_string */
 
 static BencodeNode *parse_string(BencodeParser *p) {
     /*
@@ -148,7 +148,7 @@ static BencodeNode *parse_string(BencodeParser *p) {
     return node;
 }
 
-/* ── parse_list ──────────────────────────────────────────────────────────── */
+/* parse_list */
 
 static BencodeNode *parse_list(BencodeParser *p) {
     /*
@@ -192,7 +192,7 @@ static BencodeNode *parse_list(BencodeParser *p) {
     return node;
 }
 
-/* ── parse_dict ──────────────────────────────────────────────────────────── */
+/* parse_dict */
 
 static BencodeNode *parse_dict(BencodeParser *p) {
     /*
@@ -266,7 +266,7 @@ static BencodeNode *parse_dict(BencodeParser *p) {
     return node;
 }
 
-/* ── parse_value — the dispatcher ───────────────────────────────────────── */
+/* parse_value — the dispatcher */
 
 static BencodeNode *parse_value(BencodeParser *p) {
     /*
@@ -292,7 +292,7 @@ static BencodeNode *parse_value(BencodeParser *p) {
     return NULL;
 }
 
-/* ── Public API ──────────────────────────────────────────────────────────── */
+/* Public API */
 
 BencodeNode *bencode_parse(const uint8_t *data, size_t len) {
     BencodeParser p = { .data = data, .len = len, .pos = 0 };

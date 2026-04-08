@@ -23,7 +23,7 @@
 #include "torrent.h"
 #include <stdint.h>
 
-/* ── Peer address ────────────────────────────────────────────────────────── */
+/* Peer address */
 
 /**
  * Peer - a peer's IP address and port number.
@@ -34,7 +34,7 @@ typedef struct {
     uint16_t port;      /* TCP port number */
 } Peer;
 
-/* ── Peer list returned by tracker ──────────────────────────────────────── */
+/* Peer list returned by tracker */
 
 typedef struct {
     Peer  *peers;   /* heap-allocated array of Peer structs */
@@ -42,7 +42,7 @@ typedef struct {
     int    interval; /* suggested re-announce interval in seconds */
 } PeerList;
 
-/* ── Tracker announce ────────────────────────────────────────────────────── */
+/* Tracker announce */
 
 /**
  * tracker_announce - send an announce request to the tracker.

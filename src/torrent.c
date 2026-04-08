@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* ── Helper: read entire file into memory ────────────────────────────────── */
+/* Helper: read entire file into memory */
 
 static uint8_t *read_file(const char *path, size_t *out_len) {
     FILE *f = fopen(path, "rb");
@@ -48,7 +48,7 @@ static uint8_t *read_file(const char *path, size_t *out_len) {
     return buf;
 }
 
-/* ── Helper: compute info_hash ───────────────────────────────────────────── */
+/* Helper: compute info_hash */
 
 /*
  * The info_hash is SHA-1 of the raw bencoded bytes of the "info" dictionary.
@@ -166,7 +166,7 @@ static int compute_info_hash(const uint8_t *raw, size_t raw_len,
     return -1;
 }
 
-/* ── torrent_parse ───────────────────────────────────────────────────────── */
+/* torrent_parse */
 
 TorrentInfo *torrent_parse(const char *path) {
     /* Step 1: Read the file */
@@ -349,7 +349,7 @@ TorrentInfo *torrent_parse(const char *path) {
     return t;
 }
 
-/* ── torrent_free ────────────────────────────────────────────────────────── */
+/* torrent_free */
 
 void torrent_free(TorrentInfo *t) {
     if (!t) return;
@@ -357,7 +357,7 @@ void torrent_free(TorrentInfo *t) {
     free(t);
 }
 
-/* ── torrent_print ───────────────────────────────────────────────────────── */
+/* torrent_print */
 
 void torrent_print(const TorrentInfo *t) {
     char hash_str[41];
@@ -394,7 +394,7 @@ void torrent_print(const TorrentInfo *t) {
     printf("===================\n");
 }
 
-/* ── torrent_get_piece_length ────────────────────────────────────────────── */
+/* torrent_get_piece_length */
 
 int torrent_get_piece_length(const TorrentInfo *t, int piece_idx) {
     /*
@@ -412,7 +412,7 @@ int torrent_get_piece_length(const TorrentInfo *t, int piece_idx) {
     return remainder == 0 ? t->piece_length : remainder;
 }
 
-/* ── torrent_get_piece_hash ──────────────────────────────────────────────── */
+/* torrent_get_piece_hash */
 
 const uint8_t *torrent_get_piece_hash(const TorrentInfo *t, int piece_idx) {
     return t->pieces_hash + (piece_idx * 20);

@@ -9,7 +9,7 @@
 #include <string.h>
 #include <ctype.h>
 
-/* ── Safe memory allocation ──────────────────────────────────────────────── */
+/* Safe memory allocation */
 
 void *xmalloc(size_t size) {
     void *ptr = malloc(size);
@@ -39,7 +39,7 @@ char *xstrdup(const char *s) {
     return copy;
 }
 
-/* ── Debug helpers ───────────────────────────────────────────────────────── */
+/* Debug helpers */
 
 void print_hex(const uint8_t *data, size_t len) {
     for (size_t i = 0; i < len; i++) {
@@ -61,7 +61,7 @@ void hex_to_str(const uint8_t *data, size_t len, char *out) {
     out[len * 2] = '\0';
 }
 
-/* ── URL encoding ────────────────────────────────────────────────────────── */
+/* URL encoding */
 
 void url_encode_bytes(const uint8_t *bytes, size_t len, char *out) {
     /*
@@ -88,7 +88,7 @@ void url_encode_bytes(const uint8_t *bytes, size_t len, char *out) {
     out[out_pos] = '\0';
 }
 
-/* ── Byte order helpers ──────────────────────────────────────────────────── */
+/* Byte order helpers */
 
 uint32_t read_uint32_be(const uint8_t *buf) {
     /*
