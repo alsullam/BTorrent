@@ -103,7 +103,7 @@ make clean    # Remove build artifacts
 ## 🚀 Usage
 
 ```
-btorrent 2.0.0 — BitTorrent client
+btorrent 0.2.0 — BitTorrent client
 
 Usage:
   btorrent -d <file.torrent> [options]   Download a torrent
