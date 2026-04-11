@@ -16,7 +16,7 @@
 #include <string.h>
 #include <stdint.h>
 
-/* ── Test infrastructure ─────────────────────────────────────────────────── */
+/* Test infrastructure */
 
 static int tests_run    = 0;
 static int tests_passed = 0;
@@ -39,7 +39,7 @@ static BencodeNode *parse_str(const char *s) {
     return bencode_parse((const uint8_t *)s, strlen(s));
 }
 
-/* ── Tests: Integer ──────────────────────────────────────────────────────── */
+/* Tests: Integer */
 
 static void test_integers(void) {
     printf("\n--- Integer tests ---\n");
@@ -72,7 +72,7 @@ static void test_integers(void) {
     bencode_free(n);
 }
 
-/* ── Tests: String ───────────────────────────────────────────────────────── */
+/* Tests: String */
 
 static void test_strings(void) {
     printf("\n--- String tests ---\n");
@@ -111,7 +111,7 @@ static void test_strings(void) {
     bencode_free(n);
 }
 
-/* ── Tests: List ─────────────────────────────────────────────────────────── */
+/* Tests: List */
 
 static void test_lists(void) {
     printf("\n--- List tests ---\n");
@@ -158,7 +158,7 @@ static void test_lists(void) {
     bencode_free(n);
 }
 
-/* ── Tests: Dictionary ───────────────────────────────────────────────────── */
+/* Tests: Dictionary */
 
 static void test_dicts(void) {
     printf("\n--- Dictionary tests ---\n");
@@ -206,7 +206,7 @@ static void test_dicts(void) {
     bencode_free(n);
 }
 
-/* ── Tests: Real .torrent-like structure ─────────────────────────────────── */
+/* Tests: Real .torrent-like structure */
 
 static void test_torrent_like(void) {
     printf("\n--- Torrent-like structure tests ---\n");
@@ -279,7 +279,7 @@ static void test_torrent_like(void) {
     free(buf);
 }
 
-/* ── Tests: Edge cases ───────────────────────────────────────────────────── */
+/* Tests: Edge cases */
 
 static void test_edge_cases(void) {
     printf("\n--- Edge case tests ---\n");
@@ -317,7 +317,7 @@ static void test_edge_cases(void) {
     ASSERT(port == 6881, "read_uint16_be(1A E1) == 6881");
 }
 
-/* ── SHA-1 test vectors ──────────────────────────────────────────────────── */
+/* SHA-1 test vectors */
 
 static void test_sha1(void) {
     printf("\n--- SHA-1 test vectors ---\n");
@@ -350,7 +350,7 @@ static void test_sha1(void) {
     }
 }
 
-/* ── main ────────────────────────────────────────────────────────────────── */
+/* main */
 
 int main(void) {
     printf("BTorrent Unit Tests\n");
