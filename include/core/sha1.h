@@ -30,7 +30,7 @@
 #define SHA1_DIGEST_SIZE 20    /* SHA-1 output is 20 bytes = 160 bits */
 #define SHA1_BLOCK_SIZE  64    /* SHA-1 processes data in 64-byte blocks */
 
-/* Context structure */
+/* ── Context structure ───────────────────────────────────────────────────── */
 
 /**
  * SHA1_CTX holds the running state of a SHA-1 computation.
@@ -46,7 +46,7 @@ typedef struct {
     uint32_t buf_used;          /* bytes currently in buffer */
 } SHA1_CTX;
 
-/* API */
+/* ── API ─────────────────────────────────────────────────────────────────── */
 
 /**
  * sha1_init - initialize a SHA-1 context.
@@ -91,7 +91,7 @@ void sha1_final(SHA1_CTX *ctx, uint8_t *digest);
  */
 void sha1(const uint8_t *data, size_t len, uint8_t *digest);
 
-/* Internal: process one 64-byte block */
+/* ── Internal: process one 64-byte block ────────────────────────────────── */
 
 /**
  * sha1_process_block - the core SHA-1 compression function.

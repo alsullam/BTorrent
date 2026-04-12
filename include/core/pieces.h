@@ -35,6 +35,13 @@ typedef struct {
     long long         bytes_at_start;
     struct timespec   start_time;
 
+    /* Sliding-window speed: ring buffer of (time, bytes) samples */
+#define SPEED_SAMPLES 8
+    long long         spd_bytes[SPEED_SAMPLES];
+    struct timespec   spd_time[SPEED_SAMPLES];
+    int               spd_head;   /* next write index */
+    int               spd_count;  /* samples filled so far */
+
     uint8_t *our_bitfield;
     int      bf_len;
 } PieceManager;

@@ -28,37 +28,29 @@
 #include <string.h>
 #include <unistd.h>
 
-/* ── cmd_check ───────────────────────────────────────────────────────────── */
+/* cmd_check */
 
 int cmd_check(const Config *cfg) {
     /* 1. Parse torrent */
     TorrentInfo *torrent = torrent_parse(cfg->torrent_path);
     if (!torrent) return EXIT_FAILURE;
 
-    /* 2. Resolve output path */
+    /* 2. Resolve output path — mirror cmd_download: -o sets the directory */
     char out_path[1024];
-    if (cfg->output_path[0])
-        strncpy(out_path, cfg->output_path, sizeof(out_path) - 1);
-    else
+    if (cfg->output_path[0]) {
+        int n = snprintf(out_path, sizeof(out_path) - 1, "%s/%s",
+                         cfg->output_path, torrent->name);
+        if (n < 0 || n >= (int)sizeof(out_path) - 1)
+            strncpy(out_path, torrent->name, sizeof(out_path) - 1);
+    } else {
         strncpy(out_path, torrent->name, sizeof(out_path) - 1);
+    }
     out_path[sizeof(out_path) - 1] = '\0';
 
     printf("\nChecking: %s\n", torrent->name);
     printf("Path    : %s\n", out_path);
     printf("Pieces  : %d × %d KiB\n\n",
            torrent->num_pieces, torrent->piece_length / 1024);
-
-    /* 3. For single-file torrents: if -o points directly to a file (not a
-          directory prefix), override files[0].path so piece_manager reads
-          the right location. This lets:  -o /tmp/myfile.iso  work directly. */
-    if (!torrent->is_multi_file && out_path[0]) {
-        /* memcpy avoids -Wstringop-truncation; out_path already null-terminated */
-        size_t _plen = strlen(out_path);
-        if (_plen >= sizeof(torrent->files[0].path))
-            _plen = sizeof(torrent->files[0].path) - 1;
-        memcpy(torrent->files[0].path, out_path, _plen);
-        torrent->files[0].path[_plen] = '\0';
-    }
 
     PieceManager *pm = piece_manager_new(torrent, out_path);
     if (!pm) {

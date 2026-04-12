@@ -32,7 +32,7 @@
 #include <sys/socket.h>
 #include <limits.h>
 
-/* ── Per-session read buffer ─────────────────────────────────────────────── */
+/* Per-session read buffer */
 
 #define RBUF_SIZE (1024 * 1024)   /* 1 MiB — fits any piece block + header */
 
@@ -75,7 +75,7 @@ static int rbuf_consume(ReadBuf *b, size_t need, uint8_t *dst) {
     return 1;   /* consumed */
 }
 
-/* ── Peer state machine ──────────────────────────────────────────────────── */
+/* Peer state machine */
 
 typedef enum {
     PS_CONNECTING,
@@ -112,7 +112,7 @@ typedef struct {
     ReadBuf    rbuf;
 } Session;
 
-/* ── Handshake ───────────────────────────────────────────────────────────── */
+/* Handshake */
 
 #define HANDSHAKE_LEN 68
 #define PSTR          "BitTorrent protocol"
@@ -135,7 +135,7 @@ static int verify_handshake(const uint8_t *buf, const uint8_t *info_hash) {
     return 0;
 }
 
-/* ── Non-blocking send ───────────────────────────────────────────────────── */
+/* Non-blocking send */
 
 static int nb_send(int sock, const uint8_t *buf, size_t len) {
     size_t sent = 0;
@@ -155,7 +155,7 @@ static int nb_send(int sock, const uint8_t *buf, size_t len) {
     return 0;
 }
 
-/* ── Rarest-first piece selection ────────────────────────────────────────── */
+/* Rarest-first piece selection */
 
 static int next_rarest(PieceManager *pm,
                         Session *sessions, int max_s,
@@ -183,7 +183,7 @@ static int next_rarest(PieceManager *pm,
     return best;
 }
 
-/* ── MSG_HAVE sender ─────────────────────────────────────────────────────── */
+/* MSG_HAVE sender */
 
 static void send_have_msg(int sock, int piece_idx) {
     uint8_t buf[9];
@@ -198,7 +198,7 @@ static void send_keepalive(int sock) {
     send(sock, buf, 4, MSG_NOSIGNAL);
 }
 
-/* ── Session lifecycle ───────────────────────────────────────────────────── */
+/* Session lifecycle */
 
 static void session_init(Session *s, int sock, const char *ip, uint16_t port) {
     s->sock           = sock;
@@ -231,14 +231,14 @@ static void session_close(Session *s, int epfd) {
     s->phase = PS_DEAD;
 }
 
-/* ── epoll helpers ───────────────────────────────────────────────────────── */
+/* epoll helpers */
 
 static void epoll_watch(int epfd, int fd, uint32_t ev, int idx) {
     struct epoll_event e = { .events = ev, .data.u32 = (uint32_t)idx };
     epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &e);
 }
 
-/* ── Pipeline: send as many block REQUESTs as the depth allows ───────────── */
+/* Pipeline: send as many block REQUESTs as the depth allows */
 
 static int send_requests(Session *s, const Config *cfg) {
     while (s->blocks_sent < s->num_blocks &&
@@ -255,7 +255,7 @@ static int send_requests(Session *s, const Config *cfg) {
     return 0;
 }
 
-/* ── Assign a piece and start the pipeline ───────────────────────────────── */
+/* Assign a piece and start the pipeline */
 
 static void assign_piece(Session *s, PieceManager *pm,
                           const TorrentInfo *torrent,
@@ -280,7 +280,7 @@ static void assign_piece(Session *s, PieceManager *pm,
         s->phase = PS_DEAD;
 }
 
-/* ── Return a piece in progress back to the pool ─────────────────────────── */
+/* Return a piece in progress back to the pool */
 
 static void return_piece(Session *s, PieceManager *pm) {
     if (s->piece_idx < 0) return;
@@ -300,7 +300,7 @@ static void return_piece(Session *s, PieceManager *pm) {
     s->blocks_recv = 0;
 }
 
-/* ── Message dispatcher ──────────────────────────────────────────────────── */
+/* Message dispatcher */
 
 static void dispatch_msg(Session *s, uint8_t id, uint8_t *payload, uint32_t plen,
                           int epfd, int idx,
@@ -315,6 +315,15 @@ static void dispatch_msg(Session *s, uint8_t id, uint8_t *payload, uint32_t plen
         s->am_choked = 1;
         return_piece(s, pm);
         s->phase = PS_IDLE;
+        /* Re-send INTERESTED so the peer knows we still want data.
+         * Some peers won't unchoke again unless we explicitly re-express
+         * interest after each choke. */
+        {
+            uint8_t imsg[5];
+            write_uint32_be(imsg, 1);
+            imsg[4] = MSG_INTERESTED;
+            nb_send(s->sock, imsg, 5);
+        }
         break;
 
     case MSG_UNCHOKE:
@@ -381,7 +390,7 @@ static void dispatch_msg(Session *s, uint8_t id, uint8_t *payload, uint32_t plen
     (void)all; (void)max_s;
 }
 
-/* ── handle_session ──────────────────────────────────────────────────────── */
+/* handle_session */
 
 static void handle_session(Session *s, uint32_t ev_flags,
                             int epfd, int idx,
@@ -491,7 +500,7 @@ static void handle_session(Session *s, uint32_t ev_flags,
     (void)bf_bytes;
 }
 
-/* ── open_connection ─────────────────────────────────────────────────────── */
+/* open_connection */
 
 static int open_connection(Session *s, int epfd, int idx,
                             const char *ip, uint16_t port) {
@@ -508,7 +517,7 @@ static int open_connection(Session *s, int epfd, int idx,
     return 0;
 }
 
-/* ── scheduler_run ───────────────────────────────────────────────────────── */
+/* scheduler_run */
 
 int scheduler_run(const TorrentInfo *torrent,
                   PieceManager      *pm,
@@ -552,7 +561,7 @@ int scheduler_run(const TorrentInfo *torrent,
             LOG_INFO("%s", "sched: re-announcing...");
             PeerList np = tracker_announce_with_retry(
                 torrent, peer_id, cfg->port,
-                dl, 0, torrent->total_length - dl, "");
+                dl, 0, torrent->total_length - dl, NULL);
             if (np.count > 0) {
                 peer_list_free(peers);
                 *peers       = np;

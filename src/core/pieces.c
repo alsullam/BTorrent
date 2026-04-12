@@ -152,7 +152,9 @@ PieceManager *piece_manager_new(const TorrentInfo *torrent,
              torrent->num_files, torrent->num_files == 1 ? "" : "s",
              (double)torrent->total_length / (1024.0 * 1024.0));
 
-    /* Resume: verify pieces already on disk */
+    /* Resume: verify pieces already on disk.
+     * pread on sparse file holes returns zeros instantly (no I/O),
+     * so iterating all pieces is fast even for large files. */
     int resumed = 0;
     uint8_t *buf = xmalloc((size_t)torrent->piece_length);
     for (int i = 0; i < pm->num_pieces; i++) {
@@ -270,7 +272,6 @@ int piece_manager_on_block(PieceManager  *pm,
     if (block_idx < ps->num_blocks && !ps->block_received[block_idx]) {
         ps->block_received[block_idx] = 1;
         ps->blocks_done++;
-        pm->bytes_downloaded += len;
     }
     if (ps->blocks_done < ps->num_blocks) return 0;
 
@@ -285,6 +286,16 @@ int piece_manager_on_block(PieceManager  *pm,
         return -1;
     }
     write_piece(pm, piece_idx);
+
+    /* Record verified bytes in sliding speed window */
+    pm->bytes_downloaded += pm->pieces[piece_idx].piece_length;
+    {
+        int h = pm->spd_head;
+        clock_gettime(CLOCK_MONOTONIC, &pm->spd_time[h]);
+        pm->spd_bytes[h] = pm->bytes_downloaded;
+        pm->spd_head  = (h + 1) % SPEED_SAMPLES;
+        if (pm->spd_count < SPEED_SAMPLES) pm->spd_count++;
+    }
     return 1;
 }
 
@@ -313,12 +324,17 @@ void piece_manager_print_progress(const PieceManager *pm) {
 
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
-    double elapsed = (now.tv_sec  - pm->start_time.tv_sec) +
-                     (now.tv_nsec - pm->start_time.tv_nsec) / 1e9;
 
-    /* Use a 10-second sliding window for speed so it responds quickly */
-    double speed_kbs = elapsed > 0.1
-        ? (double)pm->bytes_downloaded / elapsed / 1024.0 : 0.0;
+    /* Sliding-window speed: compare oldest sample to newest */
+    double speed_kbs = 0.0;
+    if (pm->spd_count >= 2) {
+        int newest = (pm->spd_head - 1 + SPEED_SAMPLES) % SPEED_SAMPLES;
+        int oldest = (pm->spd_head - pm->spd_count + SPEED_SAMPLES) % SPEED_SAMPLES;
+        double dt = (pm->spd_time[newest].tv_sec  - pm->spd_time[oldest].tv_sec) +
+                    (pm->spd_time[newest].tv_nsec  - pm->spd_time[oldest].tv_nsec) / 1e9;
+        long long db = pm->spd_bytes[newest] - pm->spd_bytes[oldest];
+        if (dt > 0.01) speed_kbs = (double)db / dt / 1024.0;
+    }
 
     long long total_bytes   = pm->torrent->total_length;
     long long done_bytes    = pm->bytes_at_start +

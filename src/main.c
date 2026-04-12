@@ -37,11 +37,11 @@
 
 #define BT_VERSION "2.0.0"
 
-/* ── Signal flag — shared with cmd_download.c via extern ────────────────── */
+/* Signal flag — shared with cmd_download.c via extern */
 volatile sig_atomic_t g_interrupted = 0;
 static void sig_handler(int s) { (void)s; g_interrupted = 1; }
 
-/* ── Usage ───────────────────────────────────────────────────────────────── */
+/* Usage */
 
 static void print_usage(const char *prog) {
     printf(
@@ -64,7 +64,7 @@ static void print_usage(const char *prog) {
         "  -p, --port   <N>      Listen port               (default: 6881)\n"
         "  -n, --peers  <N>      Max concurrent peers      (default: 50)\n"
         "  -t, --timeout <N>     Per-peer connect timeout  (default: 5s)\n"
-        "  -P, --pipeline <N>    Block pipeline depth      (default: 5)\n"
+        "  -P, --pipeline <N>    Block pipeline depth      (default: 64)\n"
         "  -v, --verbose         Enable debug logging\n"
         "  -l, --log <file>      Write log to file\n"
         "  -j, --json            JSON output (inspect mode)\n"
@@ -82,7 +82,7 @@ static void print_usage(const char *prog) {
     );
 }
 
-/* ── Argument parsing ────────────────────────────────────────────────────── */
+/* Argument parsing */
 
 static const struct option long_opts[] = {
     { "download",  no_argument,       NULL, 'd' },
@@ -132,7 +132,7 @@ static int parse_args(int argc, char *argv[], Config *cfg) {
     return 0;
 }
 
-/* ── main ────────────────────────────────────────────────────────────────── */
+/* main */
 
 int main(int argc, char *argv[]) {
     /* Defaults */
@@ -153,7 +153,14 @@ int main(int argc, char *argv[]) {
         return EXIT_SUCCESS;
     }
 
-    /* Validate: every mode except version needs a torrent file */
+    /* Auto-detect magnet links: if the path starts with "magnet:" treat it as
+     * a download without requiring -d flag. */
+    if (cfg.torrent_path[0] && strncmp(cfg.torrent_path, "magnet:", 7) == 0) {
+        if (cfg.mode == MODE_NONE) cfg.mode = MODE_DOWNLOAD;
+        cfg.is_magnet = 1;
+    }
+
+    /* Validate: every mode except version needs a torrent file or magnet */
     if (cfg.mode == MODE_NONE) {
         fprintf(stderr, "error: specify a mode: -d (download), "
                         "-i (inspect), -c (check)\n\n");
@@ -161,7 +168,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     if (!cfg.torrent_path[0]) {
-        fprintf(stderr, "error: no .torrent file specified\n\n");
+        fprintf(stderr, "error: no .torrent file or magnet link specified\n\n");
         print_usage(argv[0]);
         return EXIT_FAILURE;
     }
@@ -176,6 +183,10 @@ int main(int argc, char *argv[]) {
     struct sigaction sa = { .sa_handler = sig_handler };
     sigaction(SIGINT,  &sa, NULL);
     sigaction(SIGTERM, &sa, NULL);
+
+    /* Ignore SIGPIPE — broken peer connections must not kill the process.
+     * All sends use MSG_NOSIGNAL but belt-and-suspenders is safer. */
+    signal(SIGPIPE, SIG_IGN);
 
     /* Dispatch */
     int rc;

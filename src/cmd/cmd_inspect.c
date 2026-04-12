@@ -23,7 +23,7 @@
 #include <string.h>
 #include <unistd.h>
 
-/* ── Human-readable output ───────────────────────────────────────────────── */
+/* Human-readable output */
 
 static void print_human(const TorrentInfo *t) {
     char hash[41];
@@ -64,7 +64,7 @@ static void print_human(const TorrentInfo *t) {
     printf("\n");
 }
 
-/* ── JSON output ─────────────────────────────────────────────────────────── */
+/* JSON output */
 
 /* Minimal JSON string escape — handles the characters that actually appear
    in torrent metadata (no full Unicode needed). */
@@ -128,7 +128,7 @@ static void print_json(const TorrentInfo *t) {
     printf("}\n");
 }
 
-/* ── cmd_inspect ─────────────────────────────────────────────────────────── */
+/* cmd_inspect */
 
 int cmd_inspect(const Config *cfg) {
     TorrentInfo *t = torrent_parse(cfg->torrent_path);

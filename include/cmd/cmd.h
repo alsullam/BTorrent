@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-/* Runtime config (populated by parse_args in main.c) */
+/* ── Runtime config (populated by parse_args in main.c) ─────────────────── */
 
 typedef enum {
     MODE_NONE     = 0,
@@ -38,9 +38,12 @@ typedef struct {
 
     /* inspect-mode */
     int      json_output;    /* --json  → emit JSON instead of human text */
+
+    /* magnet link support */
+    int      is_magnet;      /* 1 if torrent_path is a magnet: URI */
 } Config;
 
-/* Per-mode entry points */
+/* ── Per-mode entry points ───────────────────────────────────────────────── */
 
 int cmd_download(const Config *cfg);
 int cmd_inspect (const Config *cfg);

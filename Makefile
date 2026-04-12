@@ -1,3 +1,6 @@
+## BTorrent Makefile
+## Targets: all  debug  test  test_sha1  test_peer  test_pieces  install  clean
+
 CC      = gcc
 CSTD    = -std=c11
 WARN    = -Wall -Wextra -Wpedantic -Wshadow
@@ -14,8 +17,11 @@ SRCS = src/main.c          \
        src/core/torrent.c  \
        src/core/sha1.c     \
        src/core/pieces.c   \
+       src/core/magnet.c   \
        src/proto/peer.c    \
+       src/proto/ext.c     \
        src/proto/tracker.c \
+       src/dht/dht.c       \
        src/utils.c         \
        src/log.c           \
        src/result.c
@@ -23,13 +29,13 @@ SRCS = src/main.c          \
 OBJS = $(patsubst src/%.c, build/obj/%.o, $(SRCS))
 BIN  = build/btorrent
 
-## Release
+## -- Release
 all: CFLAGS  = $(CSTD) $(WARN) $(IFLAGS) -O2 -DNDEBUG -DLOG_MIN_LEVEL=1 \
                -D_FILE_OFFSET_BITS=64
 all: LDFLAGS = -lcurl
 all: $(BIN)
 
-## Debug
+## -- Debug
 debug: CFLAGS  = $(CSTD) $(WARN) $(IFLAGS) -g3 -O0 \
                  -fsanitize=address,undefined -DLOG_MIN_LEVEL=0 \
                  -D_FILE_OFFSET_BITS=64
@@ -46,9 +52,9 @@ build/obj/%.o: src/%.c | build/obj
 -include $(OBJS:.o=.d)
 
 build/obj:
-	@mkdir -p build/obj/core build/obj/proto build/obj/net build/obj/cmd build/obj/scheduler
+	@mkdir -p build/obj/core build/obj/proto build/obj/net build/obj/cmd build/obj/dht
 
-## Install
+## -- Install
 install: all
 	install -Dm755 $(BIN) $(DESTDIR)$(PREFIX)/bin/btorrent
 	@echo "Installed to $(DESTDIR)$(PREFIX)/bin/btorrent"
@@ -56,7 +62,7 @@ install: all
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/btorrent
 
-## Tests
+## -- Tests
 TEST_COMMON = src/utils.c src/log.c src/result.c
 TEST_FLAGS  = $(CSTD) $(WARN) $(IFLAGS) -g3 -O0
 
@@ -76,7 +82,18 @@ test_pieces: build/obj
 	    src/proto/peer.c $(TEST_COMMON) -o build/test_pieces
 	@echo "--- test_pieces ---" && ./build/test_pieces
 
-test: test_sha1 test_peer test_pieces
+test_magnet: build/obj
+	$(CC) $(TEST_FLAGS) tests/unit/test_magnet.c src/core/magnet.c \
+	    $(TEST_COMMON) -o build/test_magnet
+	@echo "--- test_magnet ---" && ./build/test_magnet
+
+test_ext: build/obj
+	$(CC) $(TEST_FLAGS) tests/unit/test_ext.c \
+	    src/core/bencode.c src/core/sha1.c \
+	    $(TEST_COMMON) -o build/test_ext
+	@echo "--- test_ext ---" && ./build/test_ext
+
+test: test_sha1 test_peer test_pieces test_magnet test_ext
 
 clean:
 	rm -rf build
