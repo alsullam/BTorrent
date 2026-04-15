@@ -5,13 +5,13 @@
 
 **Links:** [Alsullam](https://github.com/alsullam/) · [Doc](https://alsullam.github.io/projects/btorrent/)
 
-BTorrent is a from-scratch BitTorrent client written in C, built to expose the inner workings of peer-to-peer systems at a low level. Instead of relying on high-level libraries, the project implements the protocol manually — from parsing `.torrent` files and handling bencoded data, to managing concurrent TCP connections and exchanging pieces across a swarm.
+BTorrent is a from-scratch BitTorrent client written in C, built to expose the inner workings of peer-to-peer systems at a low level. Instead of relying on high-level libraries, the project implements the protocol manually - from parsing `.torrent` files and handling bencoded data, to managing concurrent TCP connections and exchanging pieces across a swarm.
 
 The goal is not just to download files, but to understand how decentralized networks coordinate, verify data integrity using SHA-1, and distribute load across peers efficiently. Each component is intentionally simple, modular, and well-documented.
 
 ---
 
-## 🎯 What You'll Learn
+## What You'll Learn
 
 By reading and running this code, you will understand:
 
@@ -26,7 +26,7 @@ By reading and running this code, you will understand:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 btorrent/
@@ -84,7 +84,7 @@ btorrent/
 
 ---
 
-## 🛠 Building
+## Building
 
 Requires `gcc` and `libcurl`.
 
@@ -100,7 +100,7 @@ make clean    # Remove build artifacts
 
 ---
 
-## 🚀 Usage
+## Usage
 
 ```
 btorrent 0.2.0 — BitTorrent client
@@ -157,7 +157,7 @@ Download can be interrupted with `Ctrl+C` at any time and resumed by running the
 
 ---
 
-## 📖 Recommended Reading Order
+## Recommended Reading Order
 
 Start with the docs, then read the source alongside them:
 
@@ -172,7 +172,7 @@ Start with the docs, then read the source alongside them:
 
 ---
 
-## 🔗 BitTorrent Specification References
+## BitTorrent Specification References
 
 - [BEP 0003](https://www.bittorrent.org/beps/bep_0003.html) — The BitTorrent Protocol Specification
 - [BEP 0015](https://www.bittorrent.org/beps/bep_0015.html) — UDP Tracker Protocol
@@ -182,7 +182,7 @@ Start with the docs, then read the source alongside them:
 
 ---
 
-## ⚠️ Educational Purpose
+## Educational Purpose
 
 This client is built for learning. It deliberately implements the core protocol without:
 
