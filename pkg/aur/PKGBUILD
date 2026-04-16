@@ -3,12 +3,12 @@ pkgname=btorrent
 pkgver=1.0.2
 pkgrel=1
 pkgdesc="Concurrent BitTorrent client with DHT, magnet links, seeding, and PEX"
-arch=('x86_64' 'aarch64')
-url="https://saeeedhany.github.io/btorrent"
+arch=('linux_amd64' 'linux_aarch64')
+url="https://alsullam.github.io/btorrent"
 license=('MIT')
 depends=('curl')
 makedepends=('pkg-config')
-source=("$pkgname-$pkgver.tar.gz::https://github.com/SaeedHany/btorrent/archive/v$pkgver.tar.gz")
+source=("$pkgname-$pkgver.tar.gz::https://github.com/alsullam/Btorrent/archive/v$pkgver.tar.gz")
 sha256sums=('SKIP')  # Replace with: sha256sum btorrent-1.0.2.tar.gz
 
 build() {

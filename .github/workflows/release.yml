@@ -1,0 +1,78 @@
+name: Release Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc make pkg-config libcurl4-openssl-dev \
+            devscripts debhelper
+
+      - name: Get version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Create source tarball
+        run: make dist VERSION=$VERSION
+
+      - name: Build Debian package
+        env:
+          DEB_VERSION_UPSTREAM: ${{ env.VERSION }}
+        run: |
+          cp btorrent-*.tar.gz /tmp/
+          cd /tmp
+          tar xzf btorrent-$VERSION.tar.gz
+          cd btorrent-$VERSION
+          ln -sf ../pkg/debian/debian debian
+          dpkg-buildpackage -us -uc
+          ls -la /tmp/*.deb
+
+      - name: Upload Debian package
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.inputs.upload_url }}
+          asset_path: /tmp/btorrent_*.deb
+          asset_name: btorrent_${{ env.VERSION }}_amd64.deb
+          asset_content_type: application/vnd.debian.binary-package
+
+  aur:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Create source tarball
+        run: make dist VERSION=$VERSION
+
+      - name: Generate AUR package
+        run: |
+          cp btorrent-*.tar.gz pkg/aur/
+          cd pkg/aur
+          sha256sum btorrent-$VERSION.tar.gz
+
+      - name: Upload AUR files
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.inputs.upload_url }}
+          asset_path: pkg/aur/PKGBUILD
+          asset_name: PKGBUILD
+          asset_content_type: text/plain
+
+      - name: Show sha256sum
+        run: |
+          cd pkg/aur
+          echo "Add this to PKGBUILD sha256sums:"
+          sha256sum btorrent-$VERSION.tar.gz

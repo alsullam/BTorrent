@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04]
+        compiler: [gcc, clang]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies (gcc)
+        if: matrix.compiler == 'gcc'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc make pkg-config libcurl4-openssl-dev
+
+      - name: Install dependencies (clang)
+        if: matrix.compiler == 'clang'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang make pkg-config libcurl4-openssl-dev
+
+      - name: Set compiler
+        run: echo "CC=${{ matrix.compiler }}" >> $GITHUB_ENV
+
+      - name: Build
+        run: make clean && make -j$(nproc)
+
+      - name: Run tests
+        run: make test
+
+      - name: Check version
+        run: ./build/btorrent -V
+
+      - name: Binary info
+        run: file build/btorrent && ls -lh build/btorrent

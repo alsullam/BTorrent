@@ -1,0 +1,109 @@
+.TH BTORRENT 1 "2026-04-15" "1.0.2" "BitTorrent Manual"
+.SH NAME
+btorrent \- a concurrent BitTorrent client for Linux
+.SH SYNOPSIS
+.B btorrent
+[\fB\-d\fR] \fItorrent\fR [\fIoptions\fR]
+.PP
+.B btorrent
+[\fB\-i\fR|\fB\-c\fR] \fItorrent\fR [\fIoptions\fR]
+.SH DESCRIPTION
+.B btorrent
+is a command-line BitTorrent client for Linux. It supports DHT peer discovery,
+magnet links, seeding, and peer exchange (PEX).
+.SH MODES
+.TP
+.BR \-d ", " \-\-download
+Download a torrent file or magnet link.
+.TP
+.BR \-i ", " \-\-inspect
+Print torrent metadata without downloading.
+.TP
+.BR \-c ", " \-\-check
+Verify an existing download against piece hashes.
+.SH OPTIONS
+.TP
+.BR \-o ", " \-\-output " \fIpath\fR"
+Output directory (default: torrent name).
+.TP
+.BR \-p ", " \-\-port " \fIN\fR"
+Listen port (default: 6881).
+.TP
+.BR \-n ", " \-\-peers " \fIN\fR"
+Maximum concurrent peers (default: 50).
+.TP
+.BR \-t ", " \-\-timeout " \fIN\fR"
+Per-peer timeout in seconds (default: 5).
+.TP
+.BR \-P ", " \-\-pipeline " \fIN\fR"
+Block pipeline depth (default: 64).
+.TP
+.BR \-S ", " \-\-seed
+Keep seeding after download completes.
+.TP
+.BR \-U ", " \-\-ul " \fIN\fR"
+Upload limit in KiB/s.
+.TP
+.BR \-D ", " \-\-dl " \fIN\fR"
+Download limit in KiB/s.
+.TP
+.BR \-q ", " \-\-quiet
+Minimal output (progress bar only).
+.TP
+.BR \-v ", " \-\-verbose
+Verbose logging.
+.TP
+.BR \-l ", " \-\-log " \fIfile\fR"
+Write log to file.
+.TP
+.BR \-j ", " \-\-json
+JSON output (inspect mode only).
+.TP
+.BR \-h ", " \-\-help
+Show help message.
+.TP
+.BR \-V ", " \-\-version
+Print version.
+.SH EXAMPLES
+Download a torrent:
+.PP
+.nf
+.ft C
+btorrent -d ubuntu.torrent
+.ft P
+.fi
+.PP
+Download to specific directory with seeding:
+.PP
+.nf
+.ft C
+btorrent -d ubuntu.torrent -o ~/Downloads -S
+.ft P
+.fi
+.PP
+Inspect metadata:
+.PP
+.nf
+.ft C
+btorrent -i ubuntu.torrent -j | jq .
+.ft P
+.fi
+.PP
+Download a magnet link:
+.PP
+.nf
+.ft C
+btorrent -d 'magnet:?xt=urn:btih:...'
+.ft P
+.fi
+.SH FILES
+.TP
+.I ~/.btorrent/
+Configuration directory (future use).
+.SH BUGS
+Report bugs at <https://github.com/alsullam/Btorrent/issues>
+.SH SEE ALSO
+.BR curl (1),
+.BR tracker (3)
+.SH AUTHORS
+Written by Saeed Hany <saeed@saeeedhany.github.io>
