@@ -49,14 +49,14 @@ VERFLAGS = -DBT_VERSION=\"$(VERSION)\"
 ## ── Release ───────────────────────────────────────────────────────────────
 all: CFLAGS  = $(CSTD) $(WARN) $(IFLAGS) $(CURL_CFLAGS) $(VERFLAGS) \
                -O2 -DNDEBUG -DLOG_MIN_LEVEL=1 -D_FILE_OFFSET_BITS=64
-all: LDFLAGS = $(CURL_LIBS)
+all: LDFLAGS = $(CURL_LIBS) -lpthread
 all: $(BIN)
 
 ## ── Debug (AddressSanitizer + UBSan) ──────────────────────────────────────
 debug: CFLAGS  = $(CSTD) $(WARN) $(IFLAGS) $(CURL_CFLAGS) $(VERFLAGS) \
                  -g3 -O0 -fsanitize=address,undefined \
                  -DLOG_MIN_LEVEL=0 -D_FILE_OFFSET_BITS=64
-debug: LDFLAGS = $(CURL_LIBS) -fsanitize=address,undefined
+debug: LDFLAGS = $(CURL_LIBS) -lpthread -fsanitize=address,undefined
 debug: $(BIN)
 
 $(BIN): $(OBJS) | build/obj

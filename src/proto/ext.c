@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 200809L
+#define _GNU_SOURCE
 /**
  * ext.c — BEP 10 Extension Protocol + BEP 9 ut_metadata metadata fetch
  *
@@ -42,9 +43,13 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
+#include <pthread.h>
+#include <errno.h>
+#include <stdatomic.h>
 
 /* ── Constants ────────────────────────────────────────────────────────────── */
 
@@ -207,7 +212,7 @@ static int build_ext_handshake(uint8_t *buf, size_t cap) {
                 "11:ut_metadata" "i%de"
             "e"
             "1:q" "i%de"          /* queue depth hint (we'll request 1 at a time) */
-            "1:v" "15:btorrent/1.0.2"
+            "1:v" "15:btorrent/1.1.0"
         "e",
         UT_META_LOCAL_ID,
         1);
@@ -458,10 +463,16 @@ static TorrentInfo *try_peer_metadata(const char    *ip,
 
         /* Wait for a response — accept any message, skip non-metadata ones */
         int got_response = 0;
-        for (int attempt = 0; attempt < 30 && !got_response; attempt++) {
+        for (int attempt = 0; attempt < 10 && !got_response; attempt++) {
             uint8_t *payload = NULL; uint32_t plen = 0;
             int id = recv_wire_msg(sock, &payload, &plen);
-            if (id < 0) { free(payload); goto peer_done; }
+            if (id < 0) {
+                free(payload);
+                if (errno == EAGAIN || errno == EWOULDBLOCK || errno == ETIMEDOUT) {
+                    continue;
+                }
+                goto peer_done;
+            }
 
             if (id != EXT_MSGID || plen < 2) { free(payload); continue; }
 
@@ -474,7 +485,6 @@ static TorrentInfo *try_peer_metadata(const char    *ip,
             }
 
             if (mm.msg_type == 2) {
-                /* reject — peer doesn't have this block */
                 LOG_DEBUG("ext: %s:%d rejected block %d", ip, port, mm.piece);
                 free(payload); goto peer_done;
             }
@@ -520,7 +530,40 @@ peer_done:
     return result;
 }
 
-/* ── Public API ───────────────────────────────────────────────────────────── */
+/* ── Parallel Metadata Fetch ────────────────────────────────────────────────── */
+
+#define META_FETCH_THREADS 8
+
+typedef struct {
+    const Peer *peers;
+    int start;
+    int count;
+    const uint8_t *info_hash;
+    uint8_t peer_id[20];
+    volatile sig_atomic_t *interrupted;
+    atomic_int *done;
+    TorrentInfo *result;
+} MetaFetchArgs;
+
+static void *meta_fetch_worker(void *arg) {
+    MetaFetchArgs *a = (MetaFetchArgs *)arg;
+    for (int i = 0; i < a->count; i++) {
+        if (atomic_load(a->done)) { break; }
+        if (a->interrupted && atomic_load(a->interrupted)) { break; }
+
+        const Peer *p = &a->peers[a->start + i];
+        TorrentInfo *ti = try_peer_metadata(p->ip, p->port, a->info_hash, a->peer_id);
+        if (ti) {
+            if (!atomic_exchange(a->done, 1)) {
+                a->result = ti;
+            } else {
+                free(ti);
+            }
+            break;
+        }
+    }
+    return NULL;
+}
 
 TorrentInfo *ext_fetch_metadata(const PeerList *peers,
                                 const uint8_t  *info_hash,
@@ -528,29 +571,49 @@ TorrentInfo *ext_fetch_metadata(const PeerList *peers,
                                 volatile sig_atomic_t *interrupted) {
     if (!peers || peers->count == 0) return NULL;
 
-    /* Generate a stable peer_id for this session */
     uint8_t our_peer_id[20];
     generate_peer_id(our_peer_id);
 
     int limit = peers->count;
     if (max_peers > 0 && max_peers < limit) limit = max_peers;
 
-    LOG_INFO("ext: trying up to %d peers for metadata", limit);
+    LOG_INFO("ext: trying up to %d peers for metadata (parallel, %d threads)",
+             limit, META_FETCH_THREADS);
 
-    for (int i = 0; i < limit; i++) {
-        if (interrupted && *interrupted) {
-            LOG_INFO("%s", "ext: interrupted — stopping metadata fetch");
-            return NULL;
-        }
-        const Peer *p = &peers->peers[i];
-        TorrentInfo *ti = try_peer_metadata(p->ip, p->port,
-                                            info_hash, our_peer_id);
-        if (ti) {
-            LOG_INFO("ext: metadata fetched from %s:%d", p->ip, p->port);
-            return ti;
+    atomic_int done = 0;
+    pthread_t threads[META_FETCH_THREADS];
+    MetaFetchArgs args[META_FETCH_THREADS];
+
+    int peers_per_thread = (limit + META_FETCH_THREADS - 1) / META_FETCH_THREADS;
+    for (int t = 0; t < META_FETCH_THREADS; t++) {
+        args[t] = (MetaFetchArgs){
+            .peers = peers->peers,
+            .start = t * peers_per_thread,
+            .count = (t == META_FETCH_THREADS - 1) ? (limit - t * peers_per_thread) : peers_per_thread,
+            .info_hash = info_hash,
+            .interrupted = interrupted,
+            .done = &done,
+            .result = NULL,
+        };
+        memcpy(args[t].peer_id, our_peer_id, 20);
+        if (args[t].count > 0) {
+            pthread_create(&threads[t], NULL, meta_fetch_worker, &args[t]);
         }
     }
 
-    LOG_WARN("%s", "ext: exhausted all peers — could not fetch metadata");
-    return NULL;
+    TorrentInfo *result = NULL;
+    for (int t = 0; t < META_FETCH_THREADS; t++) {
+        if (args[t].count > 0) {
+            pthread_join(threads[t], NULL);
+        }
+        if (args[t].result) {
+            result = args[t].result;
+            LOG_INFO("%s", "ext: metadata fetched");
+        }
+    }
+
+    if (!result) {
+        LOG_WARN("%s", "ext: exhausted all peers — could not fetch metadata");
+    }
+    return result;
 }

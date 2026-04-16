@@ -6,10 +6,14 @@ Feature release focusing on IPv6 support and UDP tracker optimization.
 
 ### New features
 
+- **Parallel metadata fetch** — Magnet link metadata (BEP 9/10) is now fetched
+  using 8 concurrent threads, trying multiple peers simultaneously instead of
+  sequentially. Dramatically reduces time-to-first-byte from minutes to seconds.
+  Also fixed timeout handling to retry on socket timeout instead of giving up.
+
 - **UDP connection ID caching** — Per-tracker connection IDs are now cached for 60
   seconds (BEP 15 spec). Eliminates the extra round-trip to establish a new
-  connection ID on every re-announce. Significant latency improvement for UDP
-  trackers.
+  connection ID on every re-announce.
 
 - **IPv6 peer support** — btorrent now connects to IPv6 peers in addition to
   IPv4. Tracker responses with `peers6` bencode key (compact6 format, 18
@@ -26,6 +30,10 @@ Feature release focusing on IPv6 support and UDP tracker optimization.
 - New `parse_peers_binary()` auto-detects IPv6 (18-byte) vs IPv4 (6-byte)
 - HTTP tracker parses `peers6` bencode key and merges with `peers`
 - UDP announce uses cached connection ID when available
+
+### Dependencies
+
+- Added `-lpthread` to link with pthread library for parallel metadata fetch
 
 ### Tests
 

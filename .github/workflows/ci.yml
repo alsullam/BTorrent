@@ -23,13 +23,13 @@ jobs:
         if: matrix.compiler == 'gcc'
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc make pkg-config libcurl4-openssl-dev
+          sudo apt-get install -y gcc make pkg-config libcurl4-openssl-dev git
 
       - name: Install dependencies (clang)
         if: matrix.compiler == 'clang'
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang make pkg-config libcurl4-openssl-dev
+          sudo apt-get install -y clang make pkg-config libcurl4-openssl-dev git
 
       - name: Set compiler
         run: echo "CC=${{ matrix.compiler }}" >> $GITHUB_ENV
